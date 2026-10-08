@@ -27,7 +27,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">مفتاح التفعيل (License Key):</label>
-                    <input type="text" id="license-input" placeholder= class="w-full px-3 py-2 border rounded-lg text-center font-mono font-bold tracking-wider uppercase">
+                    <input type="text" id="license-input" placeholder="مثال: QAZZAZ-PRO-2026-VIP1" class="w-full px-3 py-2 border rounded-lg text-center font-mono font-bold tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
                 <button type="button" onclick="verifyAndActivateLicense()" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold p-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-check-circle"></i> تفعيل الترخيص والبدء
@@ -358,8 +358,7 @@
 
     <!-- JavaScript Commercial & Licensing Logic -->
     <script>
-        // مفاتيح التفعيل المعتمدة للعملاء (يمكنك إضافة مفاتيح جديدة هنا للعملاء الذين يشترون منك البرنامج)
-        const VALID_LICENSE_KEYS = ["QAZZAZ-PRO-2026-VIP1", "QAZZAZ-PRO-2026-STORE2", "DEMO-KEY-2026"];
+        const VALID_LICENSE_KEYS = ["QAZZAZ-PRO-2029-VIP1", "QAZZAZ-PRO-2029-STORE2", "DEMO-KEY-2026","AME-ALI-2027"];
 
         let storeConfig = JSON.parse(localStorage.getItem('qazzaz_store_config')) || {
             name: "القزاز للعطور ومستحضرات التجميل",
@@ -372,17 +371,21 @@
         function checkLicenseStatus() {
             let activeLicense = localStorage.getItem('qazzaz_license_activated');
             if (!activeLicense || !VALID_LICENSE_KEYS.includes(activeLicense)) {
-                document.getElementById('license-screen').classList.remove('hidden');
+                let screen = document.getElementById('license-screen');
+                if(screen) screen.classList.remove('hidden');
             } else {
                 applyStoreBranding();
             }
         }
 
         function verifyAndActivateLicense() {
-            let key = document.getElementById('license-input').value.trim().toUpperCase();
+            let inputField = document.getElementById('license-input');
+            if (!inputField) return;
+            let key = inputField.value.trim().toUpperCase();
             if (VALID_LICENSE_KEYS.includes(key)) {
                 localStorage.setItem('qazzaz_license_activated', key);
-                document.getElementById('license-screen').classList.add('hidden');
+                let screen = document.getElementById('license-screen');
+                if(screen) screen.classList.add('hidden');
                 alert('تم تفعيل الترخيص بنجاح! أهلاً بك في النظام التجاري.');
                 applyStoreBranding();
             } else {
@@ -391,13 +394,23 @@
         }
 
         function applyStoreBranding() {
-            document.getElementById('page-title').innerText = storeConfig.name;
-            document.getElementById('header-store-name').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ${storeConfig.name}`;
-            document.getElementById('modal-store-name').innerText = storeConfig.name;
+            let titleEl = document.getElementById('page-title');
+            if(titleEl) titleEl.innerText = storeConfig.name;
+
+            let headerEl = document.getElementById('header-store-name');
+            if(headerEl) headerEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ${storeConfig.name}`;
+
+            let modalEl = document.getElementById('modal-store-name');
+            if(modalEl) modalEl.innerText = storeConfig.name;
             
-            document.getElementById('setting-store-name').value = storeConfig.name;
-            document.getElementById('setting-store-phone').value = storeConfig.phone;
-            document.getElementById('setting-store-currency').value = storeConfig.currency;
+            let nameInput = document.getElementById('setting-store-name');
+            if(nameInput) nameInput.value = storeConfig.name;
+
+            let phoneInput = document.getElementById('setting-store-phone');
+            if(phoneInput) phoneInput.value = storeConfig.phone;
+
+            let currInput = document.getElementById('setting-store-currency');
+            if(currInput) currInput.value = storeConfig.currency;
         }
 
         function saveStoreSettings(e) {
@@ -429,13 +442,13 @@
             }
             currentRole = role;
             
-            const loginScreen = document.getElementById('login-screen');
+            let loginScreen = document.getElementById('login-screen');
             if(loginScreen) loginScreen.style.display = 'none';
 
-            const badge = document.getElementById('user-role-badge');
+            let badge = document.getElementById('user-role-badge');
             if(badge) badge.innerText = role === 'admin' ? 'صلاحية: مدير (إدارة وتقارير)' : 'صلاحية: بائع (مبيعات فقط)';
             
-            const adminElements = document.querySelectorAll('.admin-only');
+            let adminElements = document.querySelectorAll('.admin-only');
             if(role === 'cashier') {
                 adminElements.forEach(el => el.style.display = 'none');
                 switchTab('pos');
@@ -452,7 +465,7 @@
 
         function logout() {
             currentRole = null;
-            const loginScreen = document.getElementById('login-screen');
+            let loginScreen = document.getElementById('login-screen');
             if(loginScreen) loginScreen.style.display = 'flex';
         }
 
@@ -563,7 +576,7 @@
                 el.classList.add('text-gray-600', 'hover:bg-pink-50');
             });
             document.getElementById('tab-' + tabId).classList.add('active');
-            const activeBtn = document.getElementById('btn-' + tabId);
+            let activeBtn = document.getElementById('btn-' + tabId);
             activeBtn.classList.add('bg-pink-600', 'text-white');
             activeBtn.classList.remove('text-gray-600', 'hover:bg-pink-50');
             if(tabId === 'reports') updateReports();
@@ -588,7 +601,7 @@
         }
 
         function renderPOSProducts(filter = '') {
-            const grid = document.getElementById('pos-products-grid');
+            let grid = document.getElementById('pos-products-grid');
             grid.innerHTML = '';
             let term = filter.toLowerCase();
             db.products.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term) || p.category.toLowerCase().includes(term) || p.id.toString().includes(term)).forEach(p => {
@@ -630,7 +643,7 @@
         }
 
         function addToCart(productId) {
-            const product = db.products.find(p => p.id === productId);
+            let product = db.products.find(p => p.id === productId);
             if(!product || product.qty <= 0) { alert('عذراً، هذا المنتج نفد من المخزن!'); return; }
             let item = db.cart.find(i => i.id === productId);
             if(item) {
@@ -645,7 +658,7 @@
         }
 
         function renderCart() {
-            const tbody = document.getElementById('cart-items');
+            let tbody = document.getElementById('cart-items');
             tbody.innerHTML = '';
             let subtotal = 0;
             db.cart.forEach((item, index) => {
@@ -729,8 +742,8 @@
         }
 
         function renderInventory() {
-            const tbody = document.getElementById('inventory-table-body');
-            const select = document.getElementById('pur-product');
+            let tbody = document.getElementById('inventory-table-body');
+            let select = document.getElementById('pur-product');
             tbody.innerHTML = '';
             select.innerHTML = '<option value="">اختر المنتج...</option>';
             db.products.forEach(p => {
@@ -751,7 +764,7 @@
         }
 
         function renderSalesLog() {
-            const tbody = document.getElementById('sales-log-table-body');
+            let tbody = document.getElementById('sales-log-table-body');
             tbody.innerHTML = '';
             if(db.sales.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">لا توجد عمليات بيع مسجلة حتى الآن</td></tr>`;
@@ -791,7 +804,7 @@
         }
 
         function renderPurchases() {
-            const tbody = document.getElementById('purchases-table-body');
+            let tbody = document.getElementById('purchases-table-body');
             tbody.innerHTML = '';
             db.purchases.forEach(pur => {
                 tbody.innerHTML += `<tr class="border-b"><td class="p-3">${pur.date}</td><td class="p-3">${pur.productName}</td><td class="p-3">${pur.qty}</td><td class="p-3">${pur.cost} ${storeConfig.currency}</td></tr>`;
@@ -812,7 +825,7 @@
         }
 
         function renderExpenses() {
-            const tbody = document.getElementById('expenses-table-body');
+            let tbody = document.getElementById('expenses-table-body');
             tbody.innerHTML = '';
             if(db.expenses.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400">لا توجد مصروفات مسجلة حتى الآن</td></tr>`;
@@ -874,7 +887,7 @@
             document.getElementById('rep-expenses').innerText = totalExpenses.toFixed(2) + ' ' + storeConfig.currency;
             document.getElementById('rep-net').innerText = netProfit.toFixed(2) + ' ' + storeConfig.currency;
 
-            const ctx = document.getElementById('financialChart').getContext('2d');
+            let ctx = document.getElementById('financialChart').getContext('2d');
             if(financialChartInstance) financialChartInstance.destroy();
             financialChartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -910,7 +923,7 @@
                 yearlyData[year].expenses += exp.amount;
             });
 
-            const tbody = document.getElementById('annual-reports-tbody');
+            let tbody = document.getElementById('annual-reports-tbody');
             tbody.innerHTML = '';
             let years = Object.keys(yearlyData);
             if (years.length === 0) {
