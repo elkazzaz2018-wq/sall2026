@@ -36,18 +36,25 @@
         </div>
     </div>
 
-    <!-- شاشة تسجيل الدخول -->
+    <!-- شاشة تسجيل الدخول المخصصة للموظفين والمدير -->
     <div id="login-screen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div class="text-center mb-6">
-                <i class="fa-solid fa-wand-magic-sparkles text-pink-600 text-3xl mb-2"></i>
-                <h2 id="modal-store-name" class="text-xl font-bold text-gray-800">متجر العطور ومستحضرات التجميل</h2>
-                <p class="text-xs text-gray-500 mt-1">اختر صلاحية الدخول للنظام</p>
+                <i class="fa-solid fa-user-lock text-pink-600 text-3xl mb-2"></i>
+                <h2 id="modal-store-name" class="text-xl font-bold text-gray-800">تسجيل الدخول للنظام</h2>
+                <p class="text-xs text-gray-500 mt-1">أدخل بيانات الكاشير أو المدير للبدء</p>
             </div>
-            <div class="space-y-4">
-                <button onclick="loginAs('cashier')" class="w-full bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold p-3 rounded-xl transition"><i class="fa-solid fa-cash-register"></i> الدخول كبائع (شاشة البيع فقط)</button>
-                <button onclick="loginAs('admin')" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold p-3 rounded-xl transition"><i class="fa-solid fa-lock"></i> الدخول كمدير (إدارة وتقارير وجرد)</button>
-            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">اسم المستخدم:</label>
+                    <input type="text" id="login-username" placeholder="admin أو اسم الكاشير" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">كلمة المرور:</label>
+                    <input type="password" id="login-password" placeholder="••••" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <button type="submit" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold p-3 rounded-xl transition text-sm">تسجيل الدخول</button>
+            </form>
         </div>
     </div>
 
@@ -67,11 +74,13 @@
         <div class="container mx-auto px-4 flex overflow-x-auto gap-2 py-2">
             <button onclick="switchTab('pos')" id="btn-pos" class="tab-btn px-4 py-2 rounded-lg font-semibold text-sm bg-pink-600 text-white shrink-0"><i class="fa-solid fa-cash-register"></i> كاشير المبيعات</button>
             <button onclick="switchTab('inventory')" id="btn-inventory" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-boxes-stacked"></i> المخزون</button>
-            <button onclick="switchTab('sales-log')" id="btn-sales-log" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-clock-rotate-left"></i> سجل وتقارير المبيعات</button>
+            <button onclick="switchTab('sales-log')" id="btn-sales-log" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-clock-rotate-left"></i> سجل المبيعات</button>
+            <button onclick="switchTab('staff')" id="btn-staff" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-users"></i> الموظفين والرواتب</button>
+            <button onclick="switchTab('attendance')" id="btn-attendance" class="tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-user-clock"></i> الحضور والانصراف</button>
             <button onclick="switchTab('expenses')" id="btn-expenses" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-wallet"></i> المصروفات</button>
             <button onclick="switchTab('reports')" id="btn-reports" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-chart-line"></i> الأرباح والنسخ</button>
             <button onclick="switchTab('annual-audit')" id="btn-annual-audit" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-file-invoice"></i> الجرد السنوي</button>
-            <button onclick="switchTab('settings')" id="btn-settings" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-gear"></i> الإعدادات والأمان</button>
+            <button onclick="switchTab('settings')" id="btn-settings" class="admin-only tab-btn px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-pink-50 shrink-0"><i class="fa-solid fa-gear"></i> الإعدادات</button>
         </div>
     </nav>
 
@@ -144,10 +153,10 @@
             </div>
         </div>
 
-        <!-- 3. سجل وتقارير المبيعات (مع الفلترة والطباعة) -->
+        <!-- 3. سجل وتقارير المبيعات -->
         <div id="tab-sales-log" class="tab-content">
             <div class="bg-white p-4 rounded-xl shadow mb-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">فلترة وتقارير سجل المبيعات بالتاريخ</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">سجل ومتابعة مبيعات الكاشيرية</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
                     <div><label class="block text-xs mb-1">من تاريخ:</label><input type="date" id="filter-date-from" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
                     <div><label class="block text-xs mb-1">إلى تاريخ:</label><input type="date" id="filter-date-to" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
@@ -161,13 +170,13 @@
 
             <div id="printable-section" class="bg-white p-4 rounded-xl shadow">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800">تفاصيل المبيعات</h2>
+                    <h2 class="text-lg font-bold text-gray-800">تفاصيل المبيعات والكاشير المسؤول</h2>
                     <span id="filtered-sales-total" class="text-sm font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-lg">إجمالي الفترة: 0.00</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-sm">
                         <thead class="bg-gray-50 border-b">
-                            <tr><th class="p-3">التاريخ والوقت</th><th class="p-3">المنتجات المباعة والكميات</th><th class="p-3">الإجمالي</th></tr>
+                            <tr><th class="p-3">التاريخ والوقت</th><th class="p-3">اسم الكاشير</th><th class="p-3">المنتجات المباعة</th><th class="p-3">الإجمالي</th></tr>
                         </thead>
                         <tbody id="sales-log-table-body"></tbody>
                     </table>
@@ -175,18 +184,84 @@
             </div>
         </div>
 
-        <!-- 4. المصروفات -->
+        <!-- 4. بند تسجيل الموظفين والرواتب -->
+        <div id="tab-staff" class="tab-content space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-plus text-pink-600"></i> إضافة كاشير أو موظف جديد</h2>
+                <form onsubmit="saveStaff(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <input type="text" id="st-name" placeholder="اسم الموظف / الكاشير" required class="px-3 py-2 border rounded-lg text-sm">
+                    <input type="text" id="st-username" placeholder="اسم المستخدم للدخول (Username)" required class="px-3 py-2 border rounded-lg text-sm">
+                    <input type="password" id="st-password" placeholder="كلمة المرور" required class="px-3 py-2 border rounded-lg text-sm">
+                    <input type="number" step="0.01" id="st-salary" placeholder="الراتب الشهري الأساسي" required class="px-3 py-2 border rounded-lg text-sm">
+                    <button type="submit" class="sm:col-span-4 bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 rounded-lg text-sm">حفظ الموظف وإنشاء حساب له</button>
+                </form>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">قائمة الموظفين ودفع المرتبات</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr><th class="p-3">اسم الموظف</th><th class="p-3">اسم المستخدم</th><th class="p-3">الراتب الأساسي</th><th class="p-3">إجراءات ودفع الراتب</th></tr>
+                        </thead>
+                        <tbody id="staff-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. بند الحضور والانصراف وحساب الساعات -->
+        <div id="tab-attendance" class="tab-content space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto text-center space-y-4 border-2 border-pink-200">
+                <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-fingerprint text-pink-600"></i> تسجيل الحضور والانصراف اليومي</h2>
+                <p class="text-xs text-gray-500">قم بتسجيل حضورك عند البدء وانصرافك عند انتهاء وردية العمل</p>
+                <div class="flex justify-center gap-4 pt-2">
+                    <button onclick="recordAttendance('in')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow transition text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> تسجيل حضور (دخول)
+                    </button>
+                    <button onclick="recordAttendance('out')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow transition text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i> تسجيل انصراف (خروج)
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
+                    <h2 class="text-lg font-bold text-gray-800">سجل حضور وساعات عمل الموظفين خلال الشهر</h2>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold">اختر الشهر:</label>
+                        <input type="month" id="filter-month" onchange="renderAttendance()" class="px-3 py-1.5 border rounded-lg text-sm">
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="p-3">الموظف</th>
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">وقت الحضور</th>
+                                <th class="p-3">وقت الانصراف</th>
+                                <th class="p-3">ساعات العمل اليومية</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. المصروفات -->
         <div id="tab-expenses" class="tab-content">
             <div class="bg-white p-4 rounded-xl shadow mb-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">تسجيل مصروف جديد</h2>
                 <form onsubmit="saveExpense(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <input type="text" id="exp-title" placeholder="بند المصروف (إيجار، نقل...)" required class="px-3 py-2 border rounded-lg">
+                    <input type="text" id="exp-title" placeholder="بند المصروف (إيجار، كهرباء...)" required class="px-3 py-2 border rounded-lg">
                     <input type="number" step="0.01" id="exp-amount" placeholder="المبلغ" required class="px-3 py-2 border rounded-lg">
                     <button type="submit" class="bg-red-600 text-white font-bold py-2 rounded-lg">خصم وحفظ</button>
                 </form>
             </div>
             <div class="bg-white p-4 rounded-xl shadow">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">سجل المصروفات</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">سجل المصروفات والرواتب</h2>
                 <table class="w-full text-right text-sm">
                     <thead class="bg-gray-50 border-b"><tr><th class="p-3">التاريخ</th><th class="p-3">البند</th><th class="p-3">المبلغ</th><th class="p-3">إجراءات</th></tr></thead>
                     <tbody id="expenses-table-body"></tbody>
@@ -194,14 +269,14 @@
             </div>
         </div>
 
-        <!-- 5. تقارير الأرباح والنسخ -->
+        <!-- 7. تقارير الأرباح والنسخ -->
         <div id="tab-reports" class="tab-content">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white p-4 rounded-xl shadow space-y-3">
-                    <h3 class="text-md font-bold text-gray-800 mb-4">ملخص الأرباح</h3>
+                    <h3 class="text-md font-bold text-gray-800 mb-4">ملخص الأرباح المالية</h3>
                     <div class="flex justify-between p-3 bg-gray-50 rounded"><span>إجمالي المبيعات:</span><span id="rep-sales" class="font-bold text-blue-600">0.00</span></div>
                     <div class="flex justify-between p-3 bg-gray-50 rounded"><span>تكلفة البضاعة:</span><span id="rep-cost" class="font-bold text-orange-600">0.00</span></div>
-                    <div class="flex justify-between p-3 bg-gray-50 rounded"><span>المصروفات:</span><span id="rep-expenses" class="font-bold text-red-600">0.00</span></div>
+                    <div class="flex justify-between p-3 bg-gray-50 rounded"><span>المصروفات والرواتب:</span><span id="rep-expenses" class="font-bold text-red-600">0.00</span></div>
                     <div class="flex justify-between p-3 bg-pink-50 border rounded text-lg"><span>صافي الربح:</span><span id="rep-net" class="font-black text-pink-700">0.00</span></div>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow flex flex-col justify-between">
@@ -216,7 +291,7 @@
             </div>
         </div>
 
-        <!-- 6. الجرد السنوي -->
+        <!-- 8. الجرد السنوي -->
         <div id="tab-annual-audit" class="tab-content">
             <div class="bg-white p-4 rounded-xl shadow">
                 <div class="flex justify-between items-center mb-4">
@@ -224,31 +299,31 @@
                     <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">طباعة الجرد السنوي</button>
                 </div>
                 <table class="w-full text-right text-sm">
-                    <thead class="bg-gray-50 border-b"><tr><th class="p-3">السنة</th><th class="p-3">المبيعات</th><th class="p-3">التكلفة</th><th class="p-3">المصروفات</th><th class="p-3">صافي الربح</th></tr></thead>
+                    <thead class="bg-gray-50 border-b"><tr><th class="p-3">السنة</th><th class="p-3">المبيعات</th><th class="p-3">التكلفة</th><th class="p-3">المصروفات والرواتب</th><th class="p-3">صافي الربح</th></tr></thead>
                     <tbody id="annual-reports-tbody"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 7. الإعدادات وتغيير كلمة المرور -->
+        <!-- 9. الإعدادات -->
         <div id="tab-settings" class="tab-content">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 <div class="bg-white p-6 rounded-xl shadow">
                     <h2 class="text-lg font-bold text-gray-800 mb-4">إعدادات المتجر</h2>
                     <form onsubmit="saveStoreSettings(event)" class="space-y-4">
-                        <input type="text" id="setting-store-name" placeholder="اسم المتجر" required class="w-full px-3 py-2 border rounded-lg">
-                        <input type="text" id="setting-store-phone" placeholder="رقم الهاتف" class="w-full px-3 py-2 border rounded-lg">
-                        <input type="text" id="setting-store-currency" placeholder="العملة (ج.م)" required class="w-full px-3 py-2 border rounded-lg">
-                        <button type="submit" class="w-full bg-pink-600 text-white font-bold py-2 rounded-lg">حفظ الإعدادات</button>
+                        <input type="text" id="setting-store-name" placeholder="اسم المتجر" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <input type="text" id="setting-store-phone" placeholder="رقم الهاتف" class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <input type="text" id="setting-store-currency" placeholder="العملة (ج.م)" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <button type="submit" class="w-full bg-pink-600 text-white font-bold py-2 rounded-lg text-sm">حفظ الإعدادات</button>
                     </form>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4">تغيير كلمة سر المدير</h2>
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">تغيير كلمة سر المدير (admin)</h2>
                     <form onsubmit="changeAdminPassword(event)" class="space-y-4">
-                        <input type="password" id="old-admin-pass" placeholder="كلمة المرور الحالية" required class="w-full px-3 py-2 border rounded-lg">
-                        <input type="password" id="new-admin-pass" placeholder="كلمة المرور الجديدة" required class="w-full px-3 py-2 border rounded-lg">
-                        <input type="password" id="confirm-admin-pass" placeholder="تأكيد كلمة المرور" required class="w-full px-3 py-2 border rounded-lg">
-                        <button type="submit" class="w-full bg-purple-600 text-white font-bold py-2 rounded-lg">تحديث كلمة المرور</button>
+                        <input type="password" id="old-admin-pass" placeholder="كلمة المرور الحالية" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <input type="password" id="new-admin-pass" placeholder="كلمة المرور الجديدة" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <input type="password" id="confirm-admin-pass" placeholder="تأكيد كلمة المرور" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                        <button type="submit" class="w-full bg-purple-600 text-white font-bold py-2 rounded-lg text-sm">تحديث كلمة المرور</button>
                     </form>
                 </div>
             </div>
@@ -261,7 +336,8 @@
         const VALID_LICENSE_KEYS = ["QAZZAZ-PRO-2026-VIP1", "QAZZAZ-PRO-2026-STORE2", "DEMO-KEY-2026"];
         let storeConfig = JSON.parse(localStorage.getItem('qazzaz_store_config')) || { name: "القزاز للعطور ومستحضرات التجميل", phone: "01000000000", currency: "ج.م" };
         let adminPassword = localStorage.getItem('qazzaz_admin_pass') || "1234";
-        let currentRole = null;
+        
+        let currentUser = null;
 
         function checkLicenseStatus() {
             let key = localStorage.getItem('qazzaz_license_activated');
@@ -321,37 +397,64 @@
             ],
             cart: [],
             expenses: JSON.parse(localStorage.getItem('qazzaz_expenses')) || [],
-            sales: JSON.parse(localStorage.getItem('qazzaz_sales')) || []
+            sales: JSON.parse(localStorage.getItem('qazzaz_sales')) || [],
+            staff: JSON.parse(localStorage.getItem('qazzaz_staff')) || [],
+            attendance: JSON.parse(localStorage.getItem('qazzaz_attendance')) || []
         };
 
-        function loginAs(role) {
-            if(role === 'admin') {
-                let pass = prompt('أدخل كلمة سر المدير:');
-                if(pass !== adminPassword) { alert('كلمة السر غير صحيحة!'); return; }
+        function handleLogin(e) {
+            e.preventDefault();
+            let u = document.getElementById('login-username').value.trim();
+            let p = document.getElementById('login-password').value.trim();
+
+            if(u === 'admin' && p === adminPassword) {
+                currentUser = { name: 'المدير العام', role: 'admin' };
+            } else {
+                let foundStaff = db.staff.find(st => st.username === u && st.password === p);
+                if(foundStaff) {
+                    currentUser = { name: foundStaff.name, role: 'cashier' };
+                } else {
+                    alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+                    return;
+                }
             }
-            currentRole = role;
+
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('user-role-badge').innerText = role === 'admin' ? 'مدير النظام' : 'بائع';
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = role === 'cashier' ? 'none' : 'block');
+            document.getElementById('user-role-badge').innerText = `${currentUser.name} (${currentUser.role === 'admin' ? 'مدير' : 'كاشير'})`;
+            
+            let now = new Date();
+            let monthStr = now.toISOString().slice(0, 7);
+            let monthInput = document.getElementById('filter-month');
+            if(monthInput) monthInput.value = monthStr;
+
             switchTab('pos');
         }
 
-        function logout() { document.getElementById('login-screen').style.display = 'flex'; }
+        function logout() { 
+            currentUser = null;
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-screen').style.display = 'flex'; 
+        }
+
         function saveData() {
             localStorage.setItem('qazzaz_products', JSON.stringify(db.products));
             localStorage.setItem('qazzaz_expenses', JSON.stringify(db.expenses));
             localStorage.setItem('qazzaz_sales', JSON.stringify(db.sales));
+            localStorage.setItem('qazzaz_staff', JSON.stringify(db.staff));
+            localStorage.setItem('qazzaz_attendance', JSON.stringify(db.attendance));
             renderAll();
         }
 
         function switchTab(tabId) {
-            if(currentRole === 'cashier' && tabId !== 'pos') return;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-pink-600', 'text-white'));
             document.getElementById('tab-' + tabId).classList.add('active');
             let btn = document.getElementById('btn-' + tabId);
             if(btn) btn.classList.add('bg-pink-600', 'text-white');
             if(tabId === 'sales-log') renderSalesLog(db.sales);
+            if(tabId === 'staff') renderStaff();
+            if(tabId === 'attendance') renderAttendance();
             if(tabId === 'reports') updateReports();
             if(tabId === 'annual-audit') renderAnnualAudit();
         }
@@ -361,9 +464,152 @@
             renderCart();
             renderInventory();
             renderSalesLog(db.sales);
+            renderStaff();
+            renderAttendance();
             renderExpenses();
             updateReports();
             renderAnnualAudit();
+        }
+
+        function saveStaff(e) {
+            e.preventDefault();
+            db.staff.push({
+                id: Date.now(),
+                name: document.getElementById('st-name').value.trim(),
+                username: document.getElementById('st-username').value.trim(),
+                password: document.getElementById('st-password').value.trim(),
+                salary: parseFloat(document.getElementById('st-salary').value) || 0
+            });
+            document.getElementById('st-name').value = '';
+            document.getElementById('st-username').value = '';
+            document.getElementById('st-password').value = '';
+            document.getElementById('st-salary').value = '';
+            saveData();
+            alert('تم تسجيل الكاشير بنجاح وأصبح بإمكانه الدخول للنظام!');
+        }
+
+        function renderStaff() {
+            let tbody = document.getElementById('staff-table-body');
+            tbody.innerHTML = '';
+            if(db.staff.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400">لا توجد موظفين مسجلين حالياً</td></tr>`;
+                return;
+            }
+            db.staff.forEach(st => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 font-semibold">${st.name}</td>
+                        <td class="p-3 text-pink-600 font-mono">${st.username}</td>
+                        <td class="p-3 font-bold">${st.salary} ${storeConfig.currency}</td>
+                        <td class="p-3 flex gap-2">
+                            <button onclick="paySalary('${st.name}', ${st.salary})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">صرف الراتب الأساسي وخصمه</button>
+                            <button onclick="deleteStaff(${st.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function paySalary(name, amount) {
+            if(confirm(`هل أنت متأكد من صرف راتب بقيمة ${amount} ${storeConfig.currency} للموظف ${name} وخصمه من الخزينة؟`)) {
+                db.expenses.push({
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString('ar-EG'),
+                    title: `راتب موظف: ${name}`,
+                    amount: amount
+                });
+                saveData();
+                alert('تم صرف الراتب وتسجيله في المصروفات بنجاح!');
+            }
+        }
+
+        function deleteStaff(id) {
+            if(confirm('هل أنت متأكد من حذف هذا الموظف؟')) {
+                db.staff = db.staff.filter(s => s.id !== id);
+                saveData();
+            }
+        }
+
+        function recordAttendance(type) {
+            if(!currentUser) { alert('يجب تسجيل الدخول أولاً!'); return; }
+            let staffName = currentUser.name;
+            if(staffName === 'المدير العام') { alert('خاصية الحضور والانصراف مخصصة للموظفين والكاشيرية.'); return; }
+
+            let todayStr = new Date().toISOString().slice(0, 10);
+            let timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            let nowFull = new Date();
+
+            let record = db.attendance.find(a => a.name === staffName && a.date === todayStr);
+
+            if(type === 'in') {
+                if(record && record.checkIn) {
+                    alert('لقد قسّمت وقت الحضور لهذا اليوم مسبقاً!');
+                    return;
+                }
+                if(record) {
+                    record.checkIn = timeStr;
+                    record.checkInTimeObj = nowFull.getTime();
+                } else {
+                    db.attendance.push({
+                        id: Date.now(),
+                        name: staffName,
+                        date: todayStr,
+                        checkIn: timeStr,
+                        checkInTimeObj: nowFull.getTime(),
+                        checkOut: '-',
+                        checkOutTimeObj: null,
+                        hours: 'قيد العمل...'
+                    });
+                }
+                alert(`تم تسجيل حضور الموظف (${staffName}) بنجاح في تمام الساعة ${timeStr}`);
+            } else if(type === 'out') {
+                if(!record || !record.checkIn) {
+                    alert('لم تقم بتسجيل الحضور (دخول) اليوم أولاً!');
+                    return;
+                }
+                if(record.checkOut && record.checkOut !== '-') {
+                    alert('لقد قمت بتسجيل الانصراف مسبقاً لهذا اليوم!');
+                    return;
+                }
+                record.checkOut = timeStr;
+                record.checkOutTimeObj = nowFull.getTime();
+                
+                let diffMs = record.checkOutTimeObj - record.checkInTimeObj;
+                let diffHrs = (diffMs / (1000 * 60 * 60)).toFixed(2);
+                record.hours = `${diffHrs} ساعة`;
+                
+                alert(`تم تسجيل انصراف (${staffName}). إجمالي ساعات العمل اليوم: ${record.hours}`);
+            }
+            saveData();
+            renderAttendance();
+        }
+
+        function renderAttendance() {
+            let tbody = document.getElementById('attendance-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            let monthFilter = document.getElementById('filter-month').value;
+
+            let filtered = db.attendance.filter(a => {
+                if(!monthFilter) return true;
+                return a.date.startsWith(monthFilter);
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">لا توجد سجلات حضور لهذا الشهر</td></tr>`;
+                return;
+            }
+
+            filtered.slice().reverse().forEach(att => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 font-semibold text-gray-800">${att.name}</td>
+                        <td class="p-3 text-xs text-gray-500">${att.date}</td>
+                        <td class="p-3 text-green-600 font-bold">${att.checkIn || '-'}</td>
+                        <td class="p-3 text-red-600 font-bold">${att.checkOut || '-'}</td>
+                        <td class="p-3 text-pink-600 font-black">${att.hours || '0 ساعة'}</td>
+                    </tr>`;
+            });
         }
 
         function renderPOSProducts(filter = '') {
@@ -420,11 +666,20 @@
             let total = Math.max(0, sub - disc);
             let cost = db.cart.reduce((s, i) => s + (i.buyPrice * i.qty), 0);
             db.cart.forEach(i => { let p = db.products.find(prod => prod.id === i.id); if(p) p.qty -= i.qty; });
-            db.sales.push({ date: new Date().toLocaleString('ar-EG'), rawDate: new Date().toISOString().slice(0, 10), items: [...db.cart], total: total, buyCost: cost });
+            
+            db.sales.push({
+                date: new Date().toLocaleString('ar-EG'),
+                rawDate: new Date().toISOString().slice(0, 10),
+                cashier: currentUser ? currentUser.name : 'غير معروف',
+                items: [...db.cart],
+                total: total,
+                buyCost: cost
+            });
+
             db.cart = [];
             document.getElementById('cart-discount').value = 0;
             saveData();
-            alert('تمت عملية البيع بنجاح!');
+            alert('تمت عملية البيع بنجاح وتسجيلها باسم الكاشير!');
         }
 
         function saveProduct(e) {
@@ -457,7 +712,13 @@
             salesArr.slice().reverse().forEach(s => {
                 sum += s.total;
                 let itemsList = s.items.map(i => `${i.name} (${i.qty})`).join('، ');
-                tbody.innerHTML += `<tr class="border-b"><td class="p-3 text-xs text-pink-600">${s.date}</td><td class="p-3 text-sm">${itemsList}</td><td class="p-3 font-bold">${s.total.toFixed(2)}</td></tr>`;
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 text-xs text-pink-600">${s.date}</td>
+                        <td class="p-3 font-bold text-gray-800 text-xs bg-gray-50">${s.cashier || 'المدير'}</td>
+                        <td class="p-3 text-sm">${itemsList}</td>
+                        <td class="p-3 font-bold">${s.total.toFixed(2)} ${storeConfig.currency}</td>
+                    </tr>`;
             });
             document.getElementById('filtered-sales-total').innerText = `إجمالي الفترة: ${sum.toFixed(2)} ${storeConfig.currency}`;
         }
@@ -492,7 +753,7 @@
             let tbody = document.getElementById('expenses-table-body');
             tbody.innerHTML = '';
             db.expenses.forEach(ex => {
-                tbody.innerHTML += `<tr class="border-b"><td class="p-3">${ex.date}</td><td class="p-3">${ex.title}</td><td class="p-3 text-red-600 font-bold">${ex.amount}</td><td class="p-3"><button onclick="db.expenses = db.expenses.filter(x => x.id !== ${ex.id});saveData()" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr class="border-b"><td class="p-3">${ex.date}</td><td class="p-3">${ex.title}</td><td class="p-3 text-red-600 font-bold">${ex.amount} ${storeConfig.currency}</td><td class="p-3"><button onclick="db.expenses = db.expenses.filter(x => x.id !== ${ex.id});saveData()" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
             });
         }
 
@@ -538,7 +799,7 @@
             r.onload = function(evt) {
                 try {
                     let imp = JSON.parse(evt.target.result);
-                    if(imp.products && imp.sales) { db.products = imp.products; db.sales = imp.sales; db.expenses = imp.expenses || []; saveData(); alert('تمت الاستعادة بنجاح!'); }
+                    if(imp.products && imp.sales) { db.products = imp.products; db.sales = imp.sales; db.expenses = imp.expenses || []; db.staff = imp.staff || []; db.attendance = imp.attendance || []; saveData(); alert('تمت الاستعادة بنجاح!'); }
                 } catch(err) { alert('الملف غير صالح!'); }
             };
             r.readAsText(f);
