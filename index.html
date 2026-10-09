@@ -18,9 +18,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         @media print {
             body * { visibility: hidden; }
-            #printable-section, #printable-section *, #receipt-modal, #receipt-modal *, #ledger-modal, #ledger-modal *, #barcode-print-modal, #barcode-print-modal * { visibility: visible; }
+            #printable-section, #printable-section *, #receipt-modal, #receipt-modal *, #ledger-modal, #ledger-modal *, #barcode-print-modal, #barcode-print-modal *, #audit-modal, #audit-modal * { visibility: visible; }
             #printable-section { position: absolute; left: 0; top: 0; width: 100%; }
-            #receipt-modal, #ledger-modal, #barcode-print-modal { position: absolute; left: 0; top: 0; width: 100%; background: white !important; z-index: 9999; }
+            #receipt-modal, #ledger-modal, #barcode-print-modal, #audit-modal { position: absolute; left: 0; top: 0; width: 100%; background: white !important; z-index: 9999; }
         }
     </style>
 </head>
@@ -89,7 +89,7 @@
             <button onclick="switchTab('suppliers')" id="btn-suppliers" class="admin-only tab-btn px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-pink-50 shrink-0 transition"><i class="fa-solid fa-truck-field"></i> حسابات الموردين</button>
             <button onclick="switchTab('expenses')" id="btn-expenses" class="admin-only tab-btn px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-pink-50 shrink-0 transition"><i class="fa-solid fa-wallet"></i> المصروفات</button>
             <button onclick="switchTab('reports')" id="btn-reports" class="admin-only tab-btn px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-pink-50 shrink-0 transition"><i class="fa-solid fa-chart-line"></i> الأرباح والرسوم البيانية</button>
-            <button onclick="switchTab('annual-audit')" id="btn-annual-audit" class="admin-only tab-btn px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-pink-50 shrink-0 transition"><i class="fa-solid fa-file-invoice"></i> الجرد السنوي</button>
+            <button onclick="switchTab('annual-audit')" id="btn-annual-audit" class="admin-only tab-btn px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-pink-50 shrink-0 transition"><i class="fa-solid fa-file-invoice"></i> مطابقة وجرد المخزون</button>
             <button onclick="switchTab('settings')" id="btn-settings" class="admin-only tab-btn px-4 py-2 rounded-xl font-bold text-sm text-gray-600 hover:bg-pink-50 shrink-0 transition"><i class="fa-solid fa-gear"></i> الإعدادات</button>
         </div>
     </nav>
@@ -100,7 +100,7 @@
         <!-- بطاقات المؤشرات السريعة للمدير -->
         <div id="admin-stats-bar" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 admin-only">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 flex items-center justify-between">
-                <div><p class="text-xs text-gray-400 font-bold">إجمالي المبيعات</p><h3 id="stat-total-sales" class="text-xl font-black text-pink-600 mt-1">0.00</h3></div>
+                <div><p class="text-xs text-gray-400 font-bold">إجمالي المبيعات العامة</p><h3 id="stat-total-sales" class="text-xl font-black text-pink-600 mt-1">0.00</h3></div>
                 <div class="w-12 h-12 bg-pink-50 rounded-2xl flex items-center justify-center text-pink-600 text-lg"><i class="fa-solid fa-coins"></i></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-pink-100 flex items-center justify-between">
@@ -178,7 +178,7 @@
                 </div>
             </div>
 
-            <!-- نافذة كاميرا الباركود -->
+            <!-- نافذة كاميرا الباركود للكاشير -->
             <div id="camera-scanner-container" class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 hidden space-y-3">
                 <div class="flex justify-between items-center">
                     <h3 class="font-black text-sm text-gray-800"><i class="fa-solid fa-camera text-pink-600"></i> مسح الباركود باستخدام الكاميرا</h3>
@@ -192,7 +192,7 @@
                     <input type="text" id="pos-search" oninput="filterPOSProducts()" placeholder="ابحث باسم المنتج أو الماركة... [F2 للتركيز]" class="w-full sm:w-1/2 px-4 py-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-300">
                     <div class="flex gap-2 w-full sm:w-auto">
                         <input type="text" id="barcode-scanner-input" placeholder="امرّر الباركود هنا..." onkeypress="handleBarcodeKeypress(event)" class="w-full sm:w-60 px-4 py-2.5 border-2 border-pink-400 bg-pink-50/50 rounded-xl font-bold text-sm outline-none">
-                        <button onclick="openCameraScanner()" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 transition flex items-center gap-1.5"><i class="fa-solid fa-camera"></i> مسح بالكاميرا</button>
+                        <button onclick="openCameraScanner('pos')" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 transition flex items-center gap-1.5"><i class="fa-solid fa-camera"></i> مسح بالكاميرا</button>
                     </div>
                 </div>
                 <div id="pos-products-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-[350px] overflow-y-auto p-1"></div>
@@ -201,20 +201,34 @@
 
         <!-- 2. إدارة المخزون والنواقص والصلاحية -->
         <div id="tab-inventory" class="tab-content admin-only space-y-6">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100">
-                <h2 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-pink-600"></i> إضافة منتج جديد للمخزن وتاريخ الصلاحية</h2>
-                <form id="product-form" onsubmit="saveProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-3">
-                    <input type="text" id="p-name" placeholder="اسم المنتج" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <input type="text" id="p-brand" placeholder="الماركة" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <select id="p-category" required class="px-3.5 py-2.5 border rounded-xl bg-white text-sm outline-none">
-                        <option value="مكياج">مكياج</option><option value="عطور">عطور</option><option value="عناية بالبشرة">عناية بالبشرة</option><option value="عناية بالشعر">عناية بالشعر</option>
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-black text-gray-800 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-pink-600"></i> إضافة منتج جديد للمخزن وتاريخ الصلاحية</h2>
+                    <button onclick="openCameraScanner('inventory')" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-camera"></i> مسح باركود المنتج بالكاميرا</button>
+                </div>
+
+                <!-- نافذة كاميرا الباركود للمخزن -->
+                <div id="inventory-camera-container" class="hidden space-y-3 bg-pink-50/50 p-4 rounded-2xl border border-pink-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-black text-xs text-pink-700">توجيه الكاميرا نحو باركود المنتج الجديد</h3>
+                        <button onclick="stopCameraScanner()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded-lg text-xs">إغلاق الكاميرا</button>
+                    </div>
+                    <div id="inventory-reader" class="w-full max-w-sm mx-auto rounded-xl overflow-hidden border"></div>
+                </div>
+
+                <form id="product-form" onsubmit="saveProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-9 gap-3">
+                    <input type="text" id="p-id" placeholder="كود / باركود المنتج" required class="px-3 py-2.5 border rounded-xl text-sm outline-none font-mono">
+                    <input type="text" id="p-name" placeholder="اسم المنتج" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <input type="text" id="p-brand" placeholder="الماركة" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <select id="p-category" required class="px-3 py-2.5 border rounded-xl bg-white text-sm outline-none">
+                        <option value="مكياج">مكياج</option><option value="عطور">عطور أصلية</option><option value="زيوت عطور">زيوت عطور خام</option><option value="عناية بالبشرة">عناية بالبشرة</option><option value="عناية بالشعر">عناية بالشعر</option>
                     </select>
-                    <input type="number" step="0.01" id="p-buy" placeholder="سعر الشراء" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <input type="number" step="0.01" id="p-sell" placeholder="سعر القطاعي" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <input type="number" step="0.01" id="p-wholesale" placeholder="سعر الجملة" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <input type="number" id="p-qty" placeholder="الكمية" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <input type="date" id="p-expiry" title="تاريخ الصلاحية" required class="px-3.5 py-2.5 border rounded-xl text-sm outline-none">
-                    <button type="submit" class="sm:col-span-2 lg:col-span-8 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-md shadow-emerald-100">حفظ المنتج في المخزن</button>
+                    <input type="number" step="0.01" id="p-buy" placeholder="سعر الشراء" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <input type="number" step="0.01" id="p-sell" placeholder="سعر القطاعي" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <input type="number" step="0.01" id="p-wholesale" placeholder="سعر الجملة" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <input type="number" id="p-qty" placeholder="الكمية" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <input type="date" id="p-expiry" title="تاريخ الصلاحية" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
+                    <button type="submit" class="sm:col-span-2 lg:col-span-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-md shadow-emerald-100">حفظ المنتج في المخزن</button>
                 </form>
             </div>
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100">
@@ -222,7 +236,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-sm">
                         <thead class="bg-gray-50 border-b text-gray-500 text-xs">
-                            <tr><th class="p-3">المنتج</th><th class="p-3">الماركة</th><th class="p-3">شراء</th><th class="p-3">قطاعي / جملة</th><th class="p-3">الكمية</th><th class="p-3">تاريخ الصلاحية</th><th class="p-3">باركود</th><th class="p-3">إجراءات</th></tr>
+                            <tr><th class="p-3">الكود / الباركود</th><th class="p-3">المنتج</th><th class="p-3">الماركة / النوع</th><th class="p-3">شراء</th><th class="p-3">قطاعي / جملة</th><th class="p-3">الكمية</th><th class="p-3">تاريخ الصلاحية</th><th class="p-3">ملصق</th><th class="p-3">إجراءات</th></tr>
                         </thead>
                         <tbody id="inventory-table-body"></tbody>
                     </table>
@@ -404,9 +418,32 @@
 
         <!-- 9. الأرباح والرسوم البيانية (مدير فقط) -->
         <div id="tab-reports" class="tab-content admin-only space-y-6">
+            
+            <!-- قسم نبذة عن بيع اليوم -->
+            <div class="bg-gradient-to-r from-pink-500 to-rose-500 p-6 rounded-3xl shadow-lg text-white space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-black flex items-center gap-2"><i class="fa-solid fa-calendar-day"></i> نبذة عن بيع اليوم (<span id="today-date-str">اليوم</span>)</h3>
+                    <span class="bg-white/20 text-xs px-3 py-1 rounded-full font-bold backdrop-blur-md">ملخص مباشر</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                        <p class="text-xs text-pink-100 font-bold">إجمالي مبيعات اليوم</p>
+                        <h4 id="today-sales-total" class="text-2xl font-black mt-1">0.00</h4>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                        <p class="text-xs text-pink-100 font-bold">عدد فواتير اليوم</p>
+                        <h4 id="today-sales-count" class="text-2xl font-black mt-1">0 فواتير</h4>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                        <p class="text-xs text-pink-100 font-bold">صافي أرباح مبيعات اليوم</p>
+                        <h4 id="today-sales-profit" class="text-2xl font-black mt-1">0.00</h4>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 space-y-3">
-                    <h3 class="text-md font-black text-gray-800 mb-4">ملخص الأرباح المالية</h3>
+                    <h3 class="text-md font-black text-gray-800 mb-4">ملخص الأرباح المالية الإجمالية</h3>
                     <div class="flex justify-between p-3 bg-gray-50 rounded-xl text-sm"><span>إجمالي المبيعات:</span><span id="rep-sales" class="font-bold text-blue-600">0.00</span></div>
                     <div class="flex justify-between p-3 bg-gray-50 rounded-xl text-sm"><span>تكلفة البضاعة:</span><span id="rep-cost" class="font-bold text-orange-600">0.00</span></div>
                     <div class="flex justify-between p-3 bg-gray-50 rounded-xl text-sm"><span>المصروفات والرواتب:</span><span id="rep-expenses" class="font-bold text-rose-600">0.00</span></div>
@@ -429,13 +466,40 @@
             </div>
         </div>
 
-        <!-- 10. الجرد السنوي (مدير فقط) -->
-        <div id="tab-annual-audit" class="tab-content admin-only">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-black text-gray-800">تقارير الأرباح والمبيعات السنوية</h3>
-                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition">طباعة الجرد السنوي</button>
+        <!-- 10. مطابقة وجرد المخزون السنوي (مدير فقط) -->
+        <div id="tab-annual-audit" class="tab-content admin-only space-y-6">
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-black text-gray-800">مطابقة وجرد المخزون الفعلي</h3>
+                        <p class="text-xs text-gray-400 mt-1">أدخل الكمية الفعلية الموجودة في الرفوف والمحل لكل منتج لمطابقتها مع النظام وكشف العجز أو الزيادة.</p>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="applyAuditStockChanges()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow"><i class="fa-solid fa-check-double"></i> اعتماد وتسوية فروق الجرد بالمخزن</button>
+                        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow"><i class="fa-solid fa-print"></i> طباعة تقرير الجرد</button>
+                    </div>
                 </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-gray-50 border-b text-gray-500 text-xs">
+                            <tr>
+                                <th class="p-3">الكود</th>
+                                <th class="p-3">المنتج</th>
+                                <th class="p-3">الكمية المسجلة (النظام)</th>
+                                <th class="p-3">الكمية الفعلية (الجرد)</th>
+                                <th class="p-3">الحالة (عجز / زيادة / مطابق)</th>
+                                <th class="p-3">قيمة الفارق</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-audit-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- تقارير الأرباح والمبيعات السنوية -->
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100">
+                <h3 class="text-lg font-black text-gray-800 mb-4">تقارير الأرباح والمبيعات السنوية</h3>
                 <table class="w-full text-right text-sm">
                     <thead class="bg-gray-50 border-b text-gray-500 text-xs"><tr><th class="p-3">السنة</th><th class="p-3">المبيعات</th><th class="p-3">التكلفة</th><th class="p-3">المصروفات والرواتب</th><th class="p-3">صافي الربح</th></tr></thead>
                     <tbody id="annual-reports-tbody"></tbody>
@@ -616,8 +680,34 @@
 
         let db = {
             products: JSON.parse(localStorage.getItem('qazzaz_products')) || [
-                { id: 1, name: 'سيروم فيتامين سي', brand: 'The Ordinary', category: 'عناية بالبشرة', buy: 150, sell: 220, wholesale: 190, qty: 3, expiry: '2026-12-31' },
-                { id: 2, name: 'عطر شانيل فاخر', brand: 'Chanel', category: 'عطور', buy: 300, sell: 500, wholesale: 450, qty: 10, expiry: '2026-06-01' }
+                // عطور أصلية فاخرة
+                { id: "201", name: 'عطر شانيل نمبر 5 (Chanel No 5)', brand: 'شانيل', category: 'عطور أصلية', buy: 450, sell: 680, wholesale: 610, qty: 10, expiry: '2029-12-31' },
+                { id: "202", name: 'عطر صاواج ديور (Dior Sauvage)', brand: 'ديور', category: 'عطور أصلية', buy: 500, sell: 750, wholesale: 680, qty: 12, expiry: '2029-11-30' },
+                { id: "203", name: 'عطر بلو دي شانيل (Bleu de Chanel)', brand: 'شانيل', category: 'عطور أصلية', buy: 480, sell: 720, wholesale: 650, qty: 8, expiry: '2029-10-15' },
+                { id: "204", name: 'عطر بلاك أفغانو (Black Afgano)', brand: 'ناسوموتو', category: 'عطور أصلية', buy: 600, sell: 900, wholesale: 820, qty: 5, expiry: '2030-01-01' },
+                { id: "205", name: 'عطر توم فورد أوركيد (Tom Ford)', brand: 'توم فورد', category: 'عطور أصلية', buy: 550, sell: 850, wholesale: 770, qty: 7, expiry: '2029-08-20' },
+                { id: "206", name: 'عطر لا في إي بيل (La Vie Est Belle)', brand: 'لانكوم', category: 'عطور أصلية', buy: 380, sell: 580, wholesale: 520, qty: 15, expiry: '2029-06-10' },
+                { id: "207", name: 'عطر كريد أفنتوس (Creed Aventus)', brand: 'كريد', category: 'عطور أصلية', buy: 700, sell: 1100, wholesale: 990, qty: 6, expiry: '2030-05-01' },
+                { id: "208", name: 'عطر قوتشي بلوم (Gucci Bloom)', brand: 'قوتشي', category: 'عطور أصلية', buy: 350, sell: 540, wholesale: 480, qty: 10, expiry: '2029-04-12' },
+                { id: "209", name: 'عطر ون مليون باكو رابان (1 Million)', brand: 'باكو رابان', category: 'عطور أصلية', buy: 400, sell: 620, wholesale: 550, qty: 14, expiry: '2029-07-22' },
+                { id: "210", name: 'عطر إيف سان لوران ليبر (YSL Libre)', brand: 'إيف سان لوران', category: 'عطور أصلية', buy: 420, sell: 650, wholesale: 580, qty: 9, expiry: '2029-09-18' },
+
+                // زيوت عطور خام (بالمللي أو الجرام)
+                { id: "801", name: 'زيت عطر خام - سافاج ديور', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 3.5, sell: 7, wholesale: 5.5, qty: 500, expiry: '2031-01-01' },
+                { id: "802", name: 'زيت عطر خام - بلو دي شانيل', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 4, sell: 8, wholesale: 6, qty: 450, expiry: '2031-01-01' },
+                { id: "803", name: 'زيت عطر خام - باكات روج 540', brand: 'سويسرا (خام)', category: 'زيوت عطور', buy: 5, sell: 10, wholesale: 8, qty: 600, expiry: '2031-01-01' },
+                { id: "804", name: 'زيت عطر خام - توم فورد أود وود', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 6, sell: 12, wholesale: 10, qty: 300, expiry: '2031-01-01' },
+                { id: "805", name: 'زيت عطر خام - مسك العروسة الأبيض', brand: 'مصر (خام)', category: 'زيوت عطور', buy: 2, sell: 4, wholesale: 3, qty: 1000, expiry: '2031-01-01' },
+                { id: "806", name: 'زيت عطر خام - عنبر ملكي خالص', brand: 'إثيوبيا (خام)', category: 'زيوت عطور', buy: 4.5, sell: 9, wholesale: 7, qty: 400, expiry: '2031-01-01' },
+                { id: "807", name: 'زيت عطر خام - ياسمين طبيعي مركز', brand: 'مصر (خام)', category: 'زيوت عطور', buy: 2.5, sell: 5, wholesale: 4, qty: 500, expiry: '2031-01-01' },
+                { id: "808", name: 'زيت عطر خام - ورد طائفي مركز', brand: 'السعودية (خام)', category: 'زيوت عطور', buy: 8, sell: 15, wholesale: 12, qty: 250, expiry: '2031-01-01' },
+                { id: "809", name: 'زيت عطر خام - لا في إي بيل', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 3.5, sell: 7, wholesale: 5.5, qty: 450, expiry: '2031-01-01' },
+                { id: "810", name: 'زيت عطر خام - إنتنس قهوة وفانيلا', brand: 'سويسرا (خام)', category: 'زيوت عطور', buy: 4, sell: 8, wholesale: 6, qty: 350, expiry: '2031-01-01' },
+
+                // مكياج وعناية أساسية
+                { id: "101", name: 'سيروم فيتامين سي للبشرة', brand: 'The Ordinary', category: 'مكياج', buy: 150, sell: 220, wholesale: 190, qty: 15, expiry: '2027-12-31' },
+                { id: "102", name: 'أحمر شفاه مات ثابت (روج)', brand: 'Huda Beauty', category: 'مكياج', buy: 80, sell: 130, wholesale: 110, qty: 30, expiry: '2028-02-28' },
+                { id: "103", name: 'مسكرا إل لاش لفت', brand: 'Essence', category: 'مكياج', buy: 90, sell: 150, wholesale: 130, qty: 25, expiry: '2027-04-10' }
             ],
             cart: JSON.parse(localStorage.getItem('qazzaz_cart_temp')) || [],
             expenses: JSON.parse(localStorage.getItem('qazzaz_expenses')) || [],
@@ -709,7 +799,7 @@
             if(tabId === 'customers') renderCustomers();
             if(tabId === 'suppliers') renderSuppliers();
             if(tabId === 'reports') { updateReports(); renderFinancialChart(); }
-            if(tabId === 'annual-audit') renderAnnualAudit();
+            if(tabId === 'annual-audit') { renderInventoryAudit(); renderAnnualAudit(); }
         }
 
         function renderAll() {
@@ -762,45 +852,48 @@
             }
         }
 
-        // تشغيل كاميرا الموبايل لقراءة الباركود
-        function openCameraScanner() {
-            let container = document.getElementById('camera-scanner-container');
-            container.classList.remove('hidden');
+        function openCameraScanner(targetMode) {
+            let containerId = targetMode === 'inventory' ? 'inventory-camera-container' : 'camera-scanner-container';
+            let readerId = targetMode === 'inventory' ? 'inventory-reader' : 'reader';
             
-            html5QrCode = new Html5Qrcode("reader");
+            document.getElementById(containerId).classList.remove('hidden');
+            
+            html5QrCode = new Html5Qrcode(readerId);
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 150 } },
                 (decodedText, decodedResult) => {
                     let code = decodedText.trim();
-                    let p = db.products.find(prod => prod.id.toString() === code || prod.name.toLowerCase().includes(code.toLowerCase()));
-                    if(p) {
-                        addToCart(p.id);
-                        alert(`تم التعرف على المنتج: ${p.name}`);
+                    if(targetMode === 'inventory') {
+                        document.getElementById('p-id').value = code;
+                        alert(`تم التقاط الباركود بنجاح: ${code}`);
                         stopCameraScanner();
                     } else {
-                        alert(`الباركود المقروء (${code}) غير مسجل في المخزن!`);
+                        let p = db.products.find(prod => prod.id.toString() === code || prod.name.toLowerCase().includes(code.toLowerCase()));
+                        if(p) {
+                            addToCart(p.id);
+                            alert(`تم التعرف على المنتج: ${p.name}`);
+                            stopCameraScanner();
+                        } else {
+                            alert(`الباركود المقروء (${code}) غير مسجل في المخزن!`);
+                        }
                     }
                 },
-                (errorMessage) => { /* تجاهل أخطاء المسح المؤقتة أثناء توجيه الكاميرا */ }
+                (errorMessage) => {}
             ).catch(err => {
                 alert('تعذر فتح الكاميرا، تأكد من منح الصلاحية للمتصفح.');
-                container.classList.add('hidden');
+                document.getElementById(containerId).classList.add('hidden');
             });
         }
 
         function stopCameraScanner() {
-            let container = document.getElementById('camera-scanner-container');
+            document.getElementById('camera-scanner-container').classList.add('hidden');
+            document.getElementById('inventory-camera-container').classList.add('hidden');
             if(html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    container.classList.add('hidden');
-                }).catch(err => { container.classList.add('hidden'); });
-            } else {
-                container.classList.add('hidden');
+                html5QrCode.stop().catch(err => {});
             }
         }
 
-        // إدارة الورديات والنقدية
         function openShift() {
             let initCash = prompt('ادخل مبلغ النقدية الابتدائي في الدرج:', '0');
             if(initCash === null) return;
@@ -1180,12 +1273,12 @@
             let term = filter.toLowerCase();
             let mode = document.getElementById('pos-price-mode').value;
 
-            db.products.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term)).forEach(p => {
+            db.products.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term) || p.id.toString().includes(term)).forEach(p => {
                 let badgeColor = p.qty <= 5 ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-gray-100 text-gray-600';
                 let displayPrice = mode === 'wholesale' ? (p.wholesale || p.sell) : p.sell;
 
                 grid.innerHTML += `
-                    <div onclick="addToCart(${p.id})" class="p-3.5 border border-pink-100 rounded-2xl cursor-pointer hover:bg-pink-50/70 transition relative bg-white shadow-sm group">
+                    <div onclick="addToCart('${p.id}')" class="p-3.5 border border-pink-100 rounded-2xl cursor-pointer hover:bg-pink-50/70 transition relative bg-white shadow-sm group">
                         <span class="absolute top-2.5 left-2.5 text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeColor}">مخزن: ${p.qty}</span>
                         <h4 class="font-black text-sm mt-1 group-hover:text-pink-600 transition">${p.name}</h4>
                         <span class="text-xs text-gray-400">${p.brand}</span>
@@ -1206,12 +1299,12 @@
         }
 
         function addToCart(id) {
-            let p = db.products.find(prod => prod.id === id);
+            let p = db.products.find(prod => prod.id.toString() === id.toString());
             if(!p || p.qty <= 0) { alert('عذراً، المنتج نفد من المخزن!'); return; }
             let mode = document.getElementById('pos-price-mode').value;
             let currentPrice = mode === 'wholesale' ? (p.wholesale || p.sell) : p.sell;
 
-            let item = db.cart.find(i => i.id === id && i.price === currentPrice);
+            let item = db.cart.find(i => i.id.toString() === id.toString() && i.price === currentPrice);
             if(item) {
                 if(item.qty + 1 > p.qty) { alert('الكمية المطلوبة تتجاوز المتاح في المخزن!'); return; }
                 item.qty++;
@@ -1280,7 +1373,7 @@
             }
 
             db.cart.forEach(i => { 
-                let p = db.products.find(prod => prod.id === i.id); 
+                let p = db.products.find(prod => prod.id.toString() === i.id.toString()); 
                 if(p) p.qty -= i.qty; 
             });
 
@@ -1375,8 +1468,13 @@
 
         function saveProduct(e) {
             e.preventDefault();
+            let prodId = document.getElementById('p-id').value.trim();
+            if(db.products.some(p => p.id.toString() === prodId)) {
+                alert('كود / باركود المنتج موجود مسبقاً في المخزن!');
+                return;
+            }
             db.products.push({
-                id: Date.now(),
+                id: prodId,
                 name: document.getElementById('p-name').value.trim(),
                 brand: document.getElementById('p-brand').value.trim(),
                 category: document.getElementById('p-category').value,
@@ -1392,7 +1490,7 @@
         }
 
         function printProductBarcode(id) {
-            let p = db.products.find(prod => prod.id === id);
+            let p = db.products.find(prod => prod.id.toString() === id.toString());
             if(!p) return;
             document.getElementById('bc-store-name').innerText = storeConfig.name;
             document.getElementById('bc-prod-name').innerText = p.name;
@@ -1418,6 +1516,7 @@
 
                 tbody.innerHTML += `
                     <tr class="border-b">
+                        <td class="p-3 font-mono font-bold text-pink-600">${p.id}</td>
                         <td class="p-3 font-semibold">${p.name}</td>
                         <td class="p-3 text-gray-500">${p.brand}</td>
                         <td class="p-3">${p.buy}</td>
@@ -1425,11 +1524,87 @@
                         <td class="p-3">${statusBadge}</td>
                         <td class="p-3">${expiryBadge}</td>
                         <td class="p-3">
-                            <button onclick="printProductBarcode(${p.id})" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-xl text-xs transition"><i class="fa-solid fa-barcode"></i> باركود</button>
+                            <button onclick="printProductBarcode('${p.id}')" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-xl text-xs transition"><i class="fa-solid fa-barcode"></i> باركود</button>
                         </td>
-                        <td class="p-3"><button onclick="db.products = db.products.filter(x => x.id !== ${p.id});saveData()" class="text-rose-500 hover:text-rose-700 transition"><i class="fa-solid fa-trash"></i></button></td>
+                        <td class="p-3"><button onclick="db.products = db.products.filter(x => x.id.toString() !== '${p.id}');saveData()" class="text-rose-500 hover:text-rose-700 transition"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
             });
+        }
+
+        function renderInventoryAudit() {
+            let tbody = document.getElementById('inventory-audit-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(db.products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">لا توجد منتجات في المخزن</td></tr>`;
+                return;
+            }
+            db.products.forEach(p => {
+                let actualQty = p.auditQty !== undefined ? p.auditQty : p.qty;
+                let diff = actualQty - p.qty;
+                let diffColor = 'text-gray-600';
+                let statusBadge = '<span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-bold">مطابق</span>';
+                
+                if(diff < 0) {
+                    statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">عجز (${Math.abs(diff)})</span>`;
+                    diffColor = 'text-rose-600 font-bold';
+                } else if(diff > 0) {
+                    statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs font-bold">زيادة (+${diff})</span>`;
+                    diffColor = 'text-emerald-600 font-bold';
+                }
+
+                let diffValue = (diff * p.buy).toFixed(2);
+
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 font-mono font-bold text-pink-600">${p.id}</td>
+                        <td class="p-3 font-semibold">${p.name} <span class="text-xs text-gray-400">(${p.brand})</span></td>
+                        <td class="p-3 font-bold text-gray-700">${p.qty}</td>
+                        <td class="p-3">
+                            <input type="number" id="audit-input-${p.id}" value="${actualQty}" oninput="updateAuditCalculation('${p.id}')" class="w-24 px-3 py-1.5 border rounded-xl text-sm font-bold text-center outline-none focus:ring-2 focus:ring-pink-300">
+                        </td>
+                        <td class="p-3" id="audit-status-${p.id}">${statusBadge}</td>
+                        <td class="p-3 ${diffColor}" id="audit-diff-${p.id}">${diffValue} ${storeConfig.currency}</td>
+                    </tr>`;
+            });
+        }
+
+        function updateAuditCalculation(id) {
+            let p = db.products.find(prod => prod.id.toString() === id.toString());
+            if(!p) return;
+            let inputVal = document.getElementById(`audit-input-${id}`).value;
+            let actualQty = parseInt(inputVal) || 0;
+            p.auditQty = actualQty;
+
+            let diff = actualQty - p.qty;
+            let statusBadge = '<span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-bold">مطابق</span>';
+            let diffColor = 'text-gray-600';
+
+            if(diff < 0) {
+                statusBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">عجز (${Math.abs(diff)})</span>`;
+                diffColor = 'text-rose-600 font-bold';
+            } else if(diff > 0) {
+                statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs font-bold">زيادة (+${diff})</span>`;
+                diffColor = 'text-emerald-600 font-bold';
+            }
+
+            document.getElementById(`audit-status-${id}`).innerHTML = statusBadge;
+            let diffEl = document.getElementById(`audit-diff-${id}`);
+            diffEl.className = `p-3 ${diffColor}`;
+            diffEl.innerText = `${(diff * p.buy).toFixed(2)} ${storeConfig.currency}`;
+        }
+
+        function applyAuditStockChanges() {
+            if(!confirm('هل أنت متأكد من اعتماد نتائج الجرد الفعلي وتحديث كميات المخزن في النظام بناءً على المطابقة؟')) return;
+            db.products.forEach(p => {
+                if(p.auditQty !== undefined) {
+                    p.qty = p.auditQty;
+                    delete p.auditQty;
+                }
+            });
+            saveData();
+            renderInventoryAudit();
+            alert('تم اعتماد وتسوية المخزن وتحديث الكميات الفعلية بنجاح!');
         }
 
         function renderSalesLog(salesArr) {
@@ -1506,9 +1681,24 @@
                 document.getElementById('rep-expenses').innerText = exp.toFixed(2);
                 document.getElementById('rep-net').innerText = (sales - cost - exp).toFixed(2);
             }
+
+            let todayStr = new Date().toISOString().slice(0, 10);
+            let todaySalesList = db.sales.filter(s => (s.rawDate || s.date.slice(0, 10)) === todayStr);
+            let todayTotal = todaySalesList.reduce((s, x) => s + x.total, 0);
+            let todayCost = todaySalesList.reduce((s, x) => s + x.buyCost, 0);
+            let todayProfit = todayTotal - todayCost;
+
+            let dateStrEl = document.getElementById('today-date-str');
+            let totalEl = document.getElementById('today-sales-total');
+            let countEl = document.getElementById('today-sales-count');
+            let profitEl = document.getElementById('today-sales-profit');
+
+            if(dateStrEl) dateStrEl.innerText = todayStr;
+            if(totalEl) totalEl.innerText = todayTotal.toFixed(2) + " " + storeConfig.currency;
+            if(countEl) countEl.innerText = `${todaySalesList.length} فواتير`;
+            if(profitEl) profitEl.innerText = todayProfit.toFixed(2) + " " + storeConfig.currency;
         }
 
-        // رسم بياني تفاعلي باستخدام Chart.js
         function renderFinancialChart() {
             let ctx = document.getElementById('financialChart');
             if(!ctx) return;
@@ -1573,7 +1763,6 @@
             r.readAsText(f);
         }
 
-        // اختصارات لوحة المفاتيح السريعة (F2 للبحث، F4 لإتمام البيع)
         window.addEventListener('keydown', function(e) {
             if(e.key === 'F2') {
                 e.preventDefault();
