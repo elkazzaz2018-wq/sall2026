@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- مكتبة الرسم البياني Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- مكتبة قراءة الباركود عبر الكاميرا -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #fdf2f8; }
@@ -126,7 +128,6 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                     <h2 class="text-lg font-black text-gray-800 flex items-center gap-2"><i class="fa-solid fa-basket-shopping text-pink-600"></i> فاتورة البيع الحالية</h2>
                     <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                        <!-- خيار نوع السعر (قطاعي أو جملة) -->
                         <select id="pos-price-mode" onchange="renderPOSProducts()" class="px-3 py-2 border rounded-xl text-xs bg-gray-50 outline-none font-bold text-blue-700">
                             <option value="sell">سعر القطاعي</option>
                             <option value="wholesale">سعر الجملة</option>
@@ -177,10 +178,22 @@
                 </div>
             </div>
 
+            <!-- نافذة كاميرا الباركود -->
+            <div id="camera-scanner-container" class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 hidden space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-black text-sm text-gray-800"><i class="fa-solid fa-camera text-pink-600"></i> مسح الباركود باستخدام الكاميرا</h3>
+                    <button onclick="stopCameraScanner()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-xl text-xs">إغلاق الكاميرا</button>
+                </div>
+                <div id="reader" class="w-full max-w-md mx-auto rounded-2xl overflow-hidden border"></div>
+            </div>
+
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                     <input type="text" id="pos-search" oninput="filterPOSProducts()" placeholder="ابحث باسم المنتج أو الماركة... [F2 للتركيز]" class="w-full sm:w-1/2 px-4 py-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-300">
-                    <input type="text" id="barcode-scanner-input" placeholder="امرّر الباركود هنا..." onkeypress="handleBarcodeKeypress(event)" class="w-full sm:w-72 px-4 py-2.5 border-2 border-pink-400 bg-pink-50/50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-pink-300">
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <input type="text" id="barcode-scanner-input" placeholder="امرّر الباركود هنا..." onkeypress="handleBarcodeKeypress(event)" class="w-full sm:w-60 px-4 py-2.5 border-2 border-pink-400 bg-pink-50/50 rounded-xl font-bold text-sm outline-none">
+                        <button onclick="openCameraScanner()" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 transition flex items-center gap-1.5"><i class="fa-solid fa-camera"></i> مسح بالكاميرا</button>
+                    </div>
                 </div>
                 <div id="pos-products-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-[350px] overflow-y-auto p-1"></div>
             </div>
@@ -261,7 +274,6 @@
                 </form>
             </div>
 
-            <!-- إدارة الورديات والنقدية -->
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100 space-y-4">
                 <h2 class="text-lg font-black text-gray-800">إدارة وردية الكاشير (فتح / إغلاق وردية)</h2>
                 <div class="p-4 bg-gray-50 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -549,6 +561,7 @@
         let currentUser = null;
         let activeShift = JSON.parse(localStorage.getItem('qazzaz_active_shift')) || null;
         let financialChartInstance = null;
+        let html5QrCode = null;
 
         function checkLicenseStatus() {
             let key = localStorage.getItem('qazzaz_license_activated');
@@ -679,6 +692,7 @@
         }
 
         function switchTab(tabId) {
+            stopCameraScanner();
             if(currentUser && currentUser.role === 'cashier' && tabId !== 'pos' && tabId !== 'attendance' && tabId !== 'customers') {
                 alert('عذراً، هذه الصلاحية للمدير فقط!');
                 return;
@@ -745,6 +759,44 @@
                 } else {
                     banner.classList.add('hidden');
                 }
+            }
+        }
+
+        // تشغيل كاميرا الموبايل لقراءة الباركود
+        function openCameraScanner() {
+            let container = document.getElementById('camera-scanner-container');
+            container.classList.remove('hidden');
+            
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                (decodedText, decodedResult) => {
+                    let code = decodedText.trim();
+                    let p = db.products.find(prod => prod.id.toString() === code || prod.name.toLowerCase().includes(code.toLowerCase()));
+                    if(p) {
+                        addToCart(p.id);
+                        alert(`تم التعرف على المنتج: ${p.name}`);
+                        stopCameraScanner();
+                    } else {
+                        alert(`الباركود المقروء (${code}) غير مسجل في المخزن!`);
+                    }
+                },
+                (errorMessage) => { /* تجاهل أخطاء المسح المؤقتة أثناء توجيه الكاميرا */ }
+            ).catch(err => {
+                alert('تعذر فتح الكاميرا، تأكد من منح الصلاحية للمتصفح.');
+                container.classList.add('hidden');
+            });
+        }
+
+        function stopCameraScanner() {
+            let container = document.getElementById('camera-scanner-container');
+            if(html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    container.classList.add('hidden');
+                }).catch(err => { container.classList.add('hidden'); });
+            } else {
+                container.classList.add('hidden');
             }
         }
 
@@ -1126,7 +1178,7 @@
             if(!grid) return;
             grid.innerHTML = '';
             let term = filter.toLowerCase();
-            let mode = document.getElementById('pos-price-mode').value; // sell أو wholesale
+            let mode = document.getElementById('pos-price-mode').value;
 
             db.products.filter(p => p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term)).forEach(p => {
                 let badgeColor = p.qty <= 5 ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-gray-100 text-gray-600';
