@@ -61,8 +61,11 @@
 
     <!-- شريط التنقل العلوي -->
     <header class="bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3.5 flex justify-between items-center">
-            <h1 id="header-store-name" class="text-lg font-black flex items-center gap-2 tracking-wide"><i class="fa-solid fa-wand-magic-sparkles"></i> نظام الإدارة والبيع</h1>
+        <div class="container mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                <h1 id="header-store-name" class="text-lg font-black flex items-center gap-2 tracking-wide"><i class="fa-solid fa-wand-magic-sparkles"></i> نظام الإدارة والبيع</h1>
+                <p class="text-[11px] text-pink-100 font-semibold mt-0.5"><i class="fa-solid fa-code"></i> تصميم وبرمجة: م / محمد عبدالوهاب القزاز</p>
+            </div>
             <div class="flex items-center gap-3">
                 <span id="user-role-badge" class="text-xs bg-black/20 backdrop-blur-md px-3.5 py-1.5 rounded-full font-bold border border-white/10"></span>
                 <button onclick="logout()" class="text-xs bg-rose-900/60 hover:bg-rose-900 px-3 py-1.5 rounded-lg font-semibold transition border border-white/10"><i class="fa-solid fa-power-off"></i> خروج</button>
@@ -176,7 +179,7 @@
             </div>
         </div>
 
-        <!-- 2. إدارة المخزون والنواقص (مع طباعة الباركود للمنتج) -->
+        <!-- 2. إدارة المخزون والنواقص -->
         <div id="tab-inventory" class="tab-content admin-only space-y-6">
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100">
                 <h2 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-pink-600"></i> إضافة منتج جديد للمخزن</h2>
@@ -297,7 +300,7 @@
             </div>
         </div>
 
-        <!-- 6. عملاء الأجل وحسابات الديون (مع كشف حساب تفصيلي) -->
+        <!-- 6. عملاء الأجل وحسابات الديون -->
         <div id="tab-customers" class="tab-content space-y-6">
             <div class="bg-white p-5 rounded-3xl shadow-sm border border-pink-100">
                 <h2 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-tag text-pink-600"></i> تسجيل عميل أجل جديد</h2>
@@ -455,7 +458,7 @@
             </div>
             <div class="text-center pt-3 border-t text-[10px] text-gray-400">
                 <p>شكراً لزيارتكم - نسعد بخدمتكم دائماً</p>
-                <p class="font-bold text-pink-600 mt-0.5">نظام القزاز الذكي للإدارة</p>
+                <p class="font-bold text-pink-600 mt-0.5">تصميم وبرمجة: م / محمد عبدالوهاب القزاز</p>
             </div>
         </div>
         <div class="mt-4 flex gap-2">
@@ -899,7 +902,10 @@
             document.getElementById('qc-name').value = '';
             document.getElementById('qc-phone').value = '';
             document.getElementById('quick-customer-modal').classList.add('hidden');
+            
+            renderCustomerDropdown();
             document.getElementById('pos-customer-select').value = newCust.id;
+            
             alert('تم إضافة العميل واختياره للفاتورة بنجاح!');
         }
 
@@ -1146,7 +1152,7 @@
                         cust.debt = (cust.debt || 0) + remainingAmount;
                         cust.ledger.push({
                             date: new Date().toLocaleString('ar-EG'),
-                            desc: `فاتورة أجل بقيمة ${total.format ? total.toFixed(2) : total} (مدفوع: ${paidAmount})`,
+                            desc: `فاتورة أجل بقيمة ${total.toFixed(2)} (مدفوع: ${paidAmount})`,
                             amount: `+ ${remainingAmount} ${storeConfig.currency}`
                         });
                     } else {
