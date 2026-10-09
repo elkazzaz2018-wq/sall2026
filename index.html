@@ -159,7 +159,7 @@
                     <div class="lg:col-span-3 border rounded-2xl overflow-hidden max-h-[220px] overflow-y-auto">
                         <table class="w-full text-right text-sm">
                             <thead class="bg-gray-50 border-b text-gray-500 text-xs">
-                                <tr><th class="p-3">المنتج</th><th class="p-3">السعر</th><th class="p-3">الكمية</th><th class="p-3">إجمالي</th><th class="p-3"></th></tr>
+                                <tr><th class="p-3">المنتج</th><th class="p-3">السعر</th><th class="p-3">الكمية (قابلة للتعديل)</th><th class="p-3">إجمالي</th><th class="p-3"></th></tr>
                             </thead>
                             <tbody id="cart-items"></tbody>
                         </table>
@@ -221,7 +221,7 @@
                     <input type="text" id="p-name" placeholder="اسم المنتج" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
                     <input type="text" id="p-brand" placeholder="الماركة" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
                     <select id="p-category" required class="px-3 py-2.5 border rounded-xl bg-white text-sm outline-none">
-                        <option value="مكياج">مكياج</option><option value="عطور">عطور أصلية</option><option value="زيوت عطور">زيوت عطور خام</option><option value="عناية بالبشرة">عناية بالبشرة</option><option value="عناية بالشعر">عناية بالشعر</option>
+                        <option value="مكياج">مكياج</option><option value="عطور أصلية">عطور أصلية</option><option value="زيوت عطور">زيوت عطور خام</option><option value="عناية بالبشرة">عناية بالبشرة</option><option value="عناية بالشعر">عناية بالشعر</option>
                     </select>
                     <input type="number" step="0.01" id="p-buy" placeholder="سعر الشراء" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
                     <input type="number" step="0.01" id="p-sell" placeholder="سعر القطاعي" required class="px-3 py-2.5 border rounded-xl text-sm outline-none">
@@ -236,7 +236,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-sm">
                         <thead class="bg-gray-50 border-b text-gray-500 text-xs">
-                            <tr><th class="p-3">الكود / الباركود</th><th class="p-3">المنتج</th><th class="p-3">الماركة / النوع</th><th class="p-3">شراء</th><th class="p-3">قطاعي / جملة</th><th class="p-3">الكمية</th><th class="p-3">تاريخ الصلاحية</th><th class="p-3">ملصق</th><th class="p-3">إجراءات</th></tr>
+                            <tr><th class="p-3">الكود / الباركود</th><th class="p-3">المنتج</th><th class="p-3">الماركة</th><th class="p-3">شراء</th><th class="p-3">قطاعي / جملة</th><th class="p-3">الكمية</th><th class="p-3">تاريخ الصلاحية</th><th class="p-3">ملصق</th><th class="p-3">إجراءات</th></tr>
                         </thead>
                         <tbody id="inventory-table-body"></tbody>
                     </table>
@@ -680,7 +680,6 @@
 
         let db = {
             products: JSON.parse(localStorage.getItem('qazzaz_products')) || [
-                // عطور أصلية فاخرة
                 { id: "201", name: 'عطر شانيل نمبر 5 (Chanel No 5)', brand: 'شانيل', category: 'عطور أصلية', buy: 450, sell: 680, wholesale: 610, qty: 10, expiry: '2029-12-31' },
                 { id: "202", name: 'عطر صاواج ديور (Dior Sauvage)', brand: 'ديور', category: 'عطور أصلية', buy: 500, sell: 750, wholesale: 680, qty: 12, expiry: '2029-11-30' },
                 { id: "203", name: 'عطر بلو دي شانيل (Bleu de Chanel)', brand: 'شانيل', category: 'عطور أصلية', buy: 480, sell: 720, wholesale: 650, qty: 8, expiry: '2029-10-15' },
@@ -691,23 +690,13 @@
                 { id: "208", name: 'عطر قوتشي بلوم (Gucci Bloom)', brand: 'قوتشي', category: 'عطور أصلية', buy: 350, sell: 540, wholesale: 480, qty: 10, expiry: '2029-04-12' },
                 { id: "209", name: 'عطر ون مليون باكو رابان (1 Million)', brand: 'باكو رابان', category: 'عطور أصلية', buy: 400, sell: 620, wholesale: 550, qty: 14, expiry: '2029-07-22' },
                 { id: "210", name: 'عطر إيف سان لوران ليبر (YSL Libre)', brand: 'إيف سان لوران', category: 'عطور أصلية', buy: 420, sell: 650, wholesale: 580, qty: 9, expiry: '2029-09-18' },
-
-                // زيوت عطور خام (بالمللي أو الجرام)
                 { id: "801", name: 'زيت عطر خام - سافاج ديور', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 3.5, sell: 7, wholesale: 5.5, qty: 500, expiry: '2031-01-01' },
                 { id: "802", name: 'زيت عطر خام - بلو دي شانيل', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 4, sell: 8, wholesale: 6, qty: 450, expiry: '2031-01-01' },
                 { id: "803", name: 'زيت عطر خام - باكات روج 540', brand: 'سويسرا (خام)', category: 'زيوت عطور', buy: 5, sell: 10, wholesale: 8, qty: 600, expiry: '2031-01-01' },
                 { id: "804", name: 'زيت عطر خام - توم فورد أود وود', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 6, sell: 12, wholesale: 10, qty: 300, expiry: '2031-01-01' },
                 { id: "805", name: 'زيت عطر خام - مسك العروسة الأبيض', brand: 'مصر (خام)', category: 'زيوت عطور', buy: 2, sell: 4, wholesale: 3, qty: 1000, expiry: '2031-01-01' },
-                { id: "806", name: 'زيت عطر خام - عنبر ملكي خالص', brand: 'إثيوبيا (خام)', category: 'زيوت عطور', buy: 4.5, sell: 9, wholesale: 7, qty: 400, expiry: '2031-01-01' },
-                { id: "807", name: 'زيت عطر خام - ياسمين طبيعي مركز', brand: 'مصر (خام)', category: 'زيوت عطور', buy: 2.5, sell: 5, wholesale: 4, qty: 500, expiry: '2031-01-01' },
-                { id: "808", name: 'زيت عطر خام - ورد طائفي مركز', brand: 'السعودية (خام)', category: 'زيوت عطور', buy: 8, sell: 15, wholesale: 12, qty: 250, expiry: '2031-01-01' },
-                { id: "809", name: 'زيت عطر خام - لا في إي بيل', brand: 'فرنسا (خام)', category: 'زيوت عطور', buy: 3.5, sell: 7, wholesale: 5.5, qty: 450, expiry: '2031-01-01' },
-                { id: "810", name: 'زيت عطر خام - إنتنس قهوة وفانيلا', brand: 'سويسرا (خام)', category: 'زيوت عطور', buy: 4, sell: 8, wholesale: 6, qty: 350, expiry: '2031-01-01' },
-
-                // مكياج وعناية أساسية
                 { id: "101", name: 'سيروم فيتامين سي للبشرة', brand: 'The Ordinary', category: 'مكياج', buy: 150, sell: 220, wholesale: 190, qty: 15, expiry: '2027-12-31' },
-                { id: "102", name: 'أحمر شفاه مات ثابت (روج)', brand: 'Huda Beauty', category: 'مكياج', buy: 80, sell: 130, wholesale: 110, qty: 30, expiry: '2028-02-28' },
-                { id: "103", name: 'مسكرا إل لاش لفت', brand: 'Essence', category: 'مكياج', buy: 90, sell: 150, wholesale: 130, qty: 25, expiry: '2027-04-10' }
+                { id: "102", name: 'أحمر شفاه مات ثابت (روج)', brand: 'Huda Beauty', category: 'مكياج', buy: 80, sell: 130, wholesale: 110, qty: 30, expiry: '2028-02-28' }
             ],
             cart: JSON.parse(localStorage.getItem('qazzaz_cart_temp')) || [],
             expenses: JSON.parse(localStorage.getItem('qazzaz_expenses')) || [],
@@ -1315,6 +1304,18 @@
             renderCart();
         }
 
+        // دالة تحديث الكمية المباشرة من حقل الإدخال في السلة
+        function updateCartQty(index, newQty) {
+            let qty = parseFloat(newQty);
+            if(isNaN(qty) || qty <= 0) {
+                db.cart[index].qty = 1;
+            } else {
+                db.cart[index].qty = qty;
+            }
+            saveData();
+            renderCart();
+        }
+
         function renderCart() {
             let tbody = document.getElementById('cart-items');
             if(!tbody) return;
@@ -1326,8 +1327,10 @@
                     <tr class="border-b">
                         <td class="p-3 font-medium">${i.name}</td>
                         <td class="p-3">${i.price}</td>
-                        <td class="p-3">${i.qty}</td>
-                        <td class="p-3 font-bold">${i.price * i.qty}</td>
+                        <td class="p-3">
+                            <input type="number" step="any" min="0.1" value="${i.qty}" onchange="updateCartQty(${idx}, this.value)" class="w-20 px-2 py-1.5 border-2 border-pink-300 rounded-xl text-center text-sm font-black text-pink-700 outline-none focus:ring-2 focus:ring-pink-400">
+                        </td>
+                        <td class="p-3 font-bold">${(i.price * i.qty).toFixed(2)}</td>
                         <td class="p-3"><button onclick="db.cart.splice(${idx},1);saveData();renderCart()" class="text-rose-500 hover:text-rose-700 transition"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
             });
@@ -1442,7 +1445,7 @@
             let itemsTbody = document.getElementById('rcpt-items-body');
             itemsTbody.innerHTML = '';
             sale.items.forEach(i => {
-                itemsTbody.innerHTML += `<tr><td class="py-0.5">${i.name}</td><td class="py-0.5">${i.qty}×${i.price}</td><td class="py-0.5">${i.qty * i.price}</td></tr>`;
+                itemsTbody.innerHTML += `<tr><td class="py-0.5">${i.name}</td><td class="py-0.5">${i.qty}×${i.price}</td><td class="py-0.5">${(i.qty * i.price).toFixed(2)}</td></tr>`;
             });
 
             document.getElementById('rcpt-subtotal').innerText = sale.subtotal.toFixed(2);
@@ -1481,7 +1484,7 @@
                 buy: parseFloat(document.getElementById('p-buy').value),
                 sell: parseFloat(document.getElementById('p-sell').value),
                 wholesale: parseFloat(document.getElementById('p-wholesale').value),
-                qty: parseInt(document.getElementById('p-qty').value),
+                qty: parseFloat(document.getElementById('p-qty').value),
                 expiry: document.getElementById('p-expiry').value
             });
             document.getElementById('product-form').reset();
@@ -1573,7 +1576,7 @@
             let p = db.products.find(prod => prod.id.toString() === id.toString());
             if(!p) return;
             let inputVal = document.getElementById(`audit-input-${id}`).value;
-            let actualQty = parseInt(inputVal) || 0;
+            let actualQty = parseFloat(inputVal) || 0;
             p.auditQty = actualQty;
 
             let diff = actualQty - p.qty;
