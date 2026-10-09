@@ -899,6 +899,7 @@
             let newCust = { id: Date.now(), name: name, phone: phone, debt: 0, ledger: [] };
             db.customers.push(newCust);
             saveData();
+            
             document.getElementById('qc-name').value = '';
             document.getElementById('qc-phone').value = '';
             document.getElementById('quick-customer-modal').classList.add('hidden');
